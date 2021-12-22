@@ -33,8 +33,5 @@ test {
 jar {
     manifest {
         enabled = false
-        attributes(
-                'Main-Class': 'com.fortniteplayerstatslinebot.FortnitePlayerStatsLineBotApplication'
-        )
     }
 }
