@@ -32,9 +32,9 @@ test {
 
 jar {
     manifest {
-        attributes (
+        attributes(
+                'Class-Path': 'build/libs/fortnite-player-stats-line-bot-0.0.1-SNAPSHOT-plain.jar',
                 'Main-Class': 'com.fortniteplayerstatslinebot.FortnitePlayerStatsLineBotApplication'
         )
-        from configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
