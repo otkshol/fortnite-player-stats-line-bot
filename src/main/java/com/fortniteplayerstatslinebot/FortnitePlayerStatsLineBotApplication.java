@@ -1,4 +1,4 @@
-package com.example.fortniteplayerstatslinebot;
+package com.fortniteplayerstatslinebot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

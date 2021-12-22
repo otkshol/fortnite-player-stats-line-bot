@@ -1,4 +1,4 @@
-package com.example.fortniteplayerstatslinebot;
+package com.fortniteplayerstatslinebot;
 
 
 import com.linecorp.bot.client.LineBlobClient;

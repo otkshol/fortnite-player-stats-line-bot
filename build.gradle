@@ -28,8 +28,9 @@ dependencies {
 
 jar {
     manifest {
-        attributes 'Implementation-Title': project.name,
-                'Implementation-Version': archiveVersion
+        attributes 'Implementation-Title': 'fortnite-player-stats-line-bot',
+                'Implementation-Version': archiveVersion,
+                'Main-Class': 'com.fortniteplayerstatslinebot.FortnitePlayerStatsLineBotApplication'
     }
 }
 
