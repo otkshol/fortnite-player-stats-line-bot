@@ -1,43 +1,31 @@
 package com.fortniteplayerstatslinebot;
 
 
-import com.linecorp.bot.client.LineBlobClient;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fortniteplayerstatslinebot.models.api.FortnitePlayerStats;
 import com.linecorp.bot.client.LineMessagingClient;
-import com.linecorp.bot.client.MessageContentResponse;
 import com.linecorp.bot.model.ReplyMessage;
-import com.linecorp.bot.model.action.DatetimePickerAction;
-import com.linecorp.bot.model.action.MessageAction;
-import com.linecorp.bot.model.action.PostbackAction;
-import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.event.Event;
 import com.linecorp.bot.model.event.MessageEvent;
-import com.linecorp.bot.model.event.message.StickerMessageContent;
 import com.linecorp.bot.model.event.message.TextMessageContent;
-import com.linecorp.bot.model.event.source.GroupSource;
-import com.linecorp.bot.model.event.source.RoomSource;
-import com.linecorp.bot.model.event.source.Source;
-import com.linecorp.bot.model.group.GroupMemberCountResponse;
-import com.linecorp.bot.model.group.GroupSummaryResponse;
 import com.linecorp.bot.model.message.*;
-import com.linecorp.bot.model.message.imagemap.*;
-import com.linecorp.bot.model.message.sender.Sender;
-import com.linecorp.bot.model.message.template.*;
 import com.linecorp.bot.model.response.BotApiResponse;
-import com.linecorp.bot.model.room.RoomMemberCountResponse;
 import com.linecorp.bot.spring.boot.annotation.EventMapping;
 import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.Arrays;
+import java.io.DataInput;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 
 import static java.util.Collections.singletonList;
 
@@ -48,6 +36,13 @@ public class FortnitePlayerStatsLineBotController {
     @Autowired
     private LineMessagingClient lineMessagingClient;
 
+    @Autowired
+    RestTemplate restTemplate;
+
+    int totalVicroyNumber;
+
+    int totalKillRate;
+
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
 
@@ -57,31 +52,104 @@ public class FortnitePlayerStatsLineBotController {
         handleTextContent(event.getReplyToken(), event, message);
     }
 
-    // サンプルから持ってきたのでここから修正する
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
         final String text = content.getText();
-        log.info("Got text message from replyToken:{}: text:{} emojis:{}", replyToken, text,
-                content.getEmojis());
-        switch (text) {
-            case "ビクロイ": {
-                lineMessagingClient.getBotInfo();
-                this.replyText(replyToken, "ビクロイって入力しましたね。APIをたたいて結果取得する予定です");
-            }
-            case "キルレート": {
-                lineMessagingClient.getBotInfo();
-                this.replyText(replyToken, "キルレートって入力しましたね。APIをたたいて結果取得する予定です");
-            }
 
-            default:
-                log.info("Returns echo message {}: {}", replyToken, text);
-                this.replyText(
-                        replyToken,
-                        text
-                );
-                break;
+        log.info("Got text message from replyToken:{}: text:{} emojis:{}", replyToken, text, content.getEmojis());
+        lineMessagingClient.getBotInfo();
+
+        // TODO Streamを使ったリファクタリング検討
+        if(isVictoryRoyalAsked(text)){
+            String accountName = getAccountName(text);
+            FortnitePlayerStats fortnitePlayerStats = executeFortnitetrackerApi(accountName);
+            if (Objects.isNull(fortnitePlayerStats.lifeTimeStats)){
+                this.replyText(replyToken, "指定のアカウントが見つかりませんでした。例を参考にもう一度入力をお願いします。\n\n例: (account名)のビクロイ数を教えて");
+            } else {
+                totalVicroyNumber = Integer.parseInt(fortnitePlayerStats.lifeTimeStats.get(8).get("value"));
+            }
+            if (isSoloStatsAsked(text)){
+                this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてソロの合計値を結果取得する予定です");
+            } else if (isDuoStatsAsked(text)){
+                this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてデュオの合計値を結果取得する予定です");
+            } else if (isTrioStatsAsked(text)){
+                this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてトリオの合計値を結果取得する予定です");
+            } else if (isSquadStatsAsked(text)){
+                this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてスクあっどの合計値を結果取得する予定です");
+            } else {
+                this.replyText(replyToken, accountName + "さんのビクロイ数は\n" + totalVicroyNumber + "回です。");
+            }
+        }
+        if(isKillRateAsked(text)){
+            String accountName = getAccountName(text);
+            FortnitePlayerStats fortnitePlayerStats = executeFortnitetrackerApi(accountName);
+            if (Objects.isNull(fortnitePlayerStats.lifeTimeStats)){
+                this.replyText(replyToken, "指定のアカウントが見つかりませんでした。例を参考にもう一度入力をお願いします。\n\n例: (account名)のキルレートを教えて");
+            } else {
+                totalKillRate = Integer.parseInt(fortnitePlayerStats.lifeTimeStats.get(11).get("value"));
+            }
+            if (isSoloStatsAsked(text)){
+                this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+            } else if (isDuoStatsAsked(text)){
+                this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+            } else if (isTrioStatsAsked(text)){
+                this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+            } else if (isSquadStatsAsked(text)){
+                this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+            } else {
+                this.replyText(replyToken, accountName + "さんのビクロイ数は\n" + totalKillRate + "回です。");
+                this.replyText(replyToken, accountName + "さんのキルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+            }
         }
     }
+
+    private FortnitePlayerStats executeFortnitetrackerApi(String accountName) throws JsonProcessingException {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("TRN-Api-Key","");
+        HttpEntity<FortnitePlayerStats> entity = new HttpEntity<>(headers);
+        ResponseEntity<String> responseJson = restTemplate.exchange("https://api.fortnitetracker.com/v1/profile/all/" + accountName, HttpMethod.GET, entity, String.class);
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(responseJson.getBody(), FortnitePlayerStats.class);
+    }
+
+    private String getAccountName(String text) {
+        if (text.contains("の")){
+            return text.split("の")[0];
+        } else if(text.contains(" ")){
+            return text.split(" ")[0];
+        } else if (text.contains("　")){
+            return text.split("　")[0];
+        } else if (text.contains("ビクロイ数")) {
+         return text.split("ビクロイ数")[0];
+        } else if (text.contains("キルレ")) {
+            return text.split("キルレ")[0];
+        } else throw new RuntimeException();
+    }
+
+    private boolean isVictoryRoyalAsked(String text) {
+        return text.contains("ビクロイ数");
+    }
+
+    private boolean isKillRateAsked(String text) {
+        return text.contains("キルレ");
+    }
+
+    private boolean isSoloStatsAsked(String text) {
+        return text.contains("ソロ") || text.contains("そろ") || text.contains("solo");
+    }
+
+    private boolean isDuoStatsAsked(String text) {
+        return text.contains("デュオ") || text.contains("でゅお") || text.contains("duo");
+    }
+
+    private boolean isTrioStatsAsked(String text) {
+        return text.contains("トリオ") || text.contains("とりお") || text.contains("trio");
+    }
+
+    private boolean isSquadStatsAsked(String text) {
+        return text.contains("スクアッド") || text.contains("すくあっど") || text.contains("squad");
+    }
+
 
     private void replyText(@NonNull String replyToken, @NonNull String message) {
         if (replyToken.isEmpty()) {
