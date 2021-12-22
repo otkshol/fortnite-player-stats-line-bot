@@ -4,7 +4,7 @@ plugins {
     id 'java'
 }
 
-group = 'com'
+group = 'com.fortniteplayerstatslinebot'
 version = '0.0.1-SNAPSHOT'
 sourceCompatibility = 1.8
 
@@ -22,17 +22,8 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'com.linecorp.bot:line-bot-spring-boot:4.7.0'
     compileOnly 'org.projectlombok:lombok'
-    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
     annotationProcessor 'org.projectlombok:lombok'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-}
-
-jar {
-    manifest {
-        attributes 'Implementation-Title': 'fortnite-player-stats-line-bot',
-                'Implementation-Version': archiveVersion,
-                'Main-Class': 'com.fortniteplayerstatslinebot.FortnitePlayerStatsLineBotApplication'
-    }
 }
 
 test {
