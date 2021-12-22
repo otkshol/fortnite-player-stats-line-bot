@@ -1,3 +1,2 @@
-web: java $JAVA_OPTS -jar fortnite-player-stats-line-bot/build/libs/fortnite-player-stats-line-bot-*-SNAPSHOT.jar --server.port=$PORT
-
+web: java $JAVA_OPTS -jar build/libs/fortnite-player-stats-line-bot-0.0.1-SNAPSHOT-plain.jar --server.port=$PORT
 
