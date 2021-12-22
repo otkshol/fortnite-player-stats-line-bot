@@ -26,6 +26,12 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
+jar {
+    manifest {
+        attributes 'Main-Class': 'com.fortniteplayerstatslinebot.FortnitePlayerStatsLineBotApplication'
+    }
+}
+
 test {
     useJUnitPlatform()
 }
