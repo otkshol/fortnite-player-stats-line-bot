@@ -26,6 +26,13 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
 
+jar {
+    manifest {
+        attributes 'Implementation-Title': project.name,
+                'Implementation-Version': archiveVersion
+    }
+}
+
 test {
     useJUnitPlatform()
 }
