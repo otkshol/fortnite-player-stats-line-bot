@@ -41,7 +41,7 @@ public class FortnitePlayerStatsLineBotController {
 
     int totalVicroyNumber;
 
-    int totalKillRate;
+    double totalKillRate;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -66,7 +66,7 @@ public class FortnitePlayerStatsLineBotController {
             if (Objects.isNull(fortnitePlayerStats.lifeTimeStats)){
                 this.replyText(replyToken, "指定のアカウントが見つかりませんでした。例を参考にもう一度入力をお願いします。\n\n例: (account名)のビクロイ数を教えて");
             } else {
-                totalVicroyNumber = Integer.parseInt(fortnitePlayerStats.lifeTimeStats.get(8).get("value"));
+                totalVicroyNumber =  Integer.parseInt(fortnitePlayerStats.lifeTimeStats.get(8).get("value"));
             }
             if (isSoloStatsAsked(text)){
                 this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてソロの合計値を結果取得する予定です");
@@ -86,7 +86,7 @@ public class FortnitePlayerStatsLineBotController {
             if (Objects.isNull(fortnitePlayerStats.lifeTimeStats)){
                 this.replyText(replyToken, "指定のアカウントが見つかりませんでした。例を参考にもう一度入力をお願いします。\n\n例: (account名)のキルレートを教えて");
             } else {
-                totalKillRate = Integer.parseInt(fortnitePlayerStats.lifeTimeStats.get(11).get("value"));
+                totalKillRate = Double.parseDouble(fortnitePlayerStats.lifeTimeStats.get(11).get("value"));
             }
             if (isSoloStatsAsked(text)){
                 this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
@@ -97,8 +97,7 @@ public class FortnitePlayerStatsLineBotController {
             } else if (isSquadStatsAsked(text)){
                 this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
             } else {
-                this.replyText(replyToken, accountName + "さんのビクロイ数は\n" + totalKillRate + "回です。");
-                this.replyText(replyToken, accountName + "さんのキルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+                this.replyText(replyToken, accountName + "さんのキルレートは\n" + totalKillRate + "です。");
             }
         }
     }
