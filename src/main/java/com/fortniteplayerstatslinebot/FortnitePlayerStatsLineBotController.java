@@ -16,7 +16,6 @@ import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -35,9 +34,6 @@ public class FortnitePlayerStatsLineBotController {
 
     @Autowired
     RestTemplate restTemplate;
-
-    @Value("${trn-api-key}")
-    private String TRN_API_KEY;
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
@@ -109,7 +105,7 @@ public class FortnitePlayerStatsLineBotController {
 
     private FortnitePlayerStats executeFortnitetrackerApi(String accountName) throws JsonProcessingException {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("TRN-Api-Key",TRN_API_KEY);
+        headers.add("TRN-Api-Key", System.getenv("TRN_API_KEY"));
         HttpEntity<FortnitePlayerStats> entity = new HttpEntity<>(headers);
         ResponseEntity<String> responseJson = restTemplate.exchange("https://api.fortnitetracker.com/v1/profile/all/" + accountName, HttpMethod.GET, entity, String.class);
         ObjectMapper mapper = new ObjectMapper();
