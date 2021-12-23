@@ -43,10 +43,6 @@ public class FortnitePlayerStatsLineBotController {
     @Value("${trn-api-key}")
     private String TRN_API_KEY;
 
-    int totalVicroyNumber;
-
-    double totalKillRate;
-
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
 
@@ -63,7 +59,7 @@ public class FortnitePlayerStatsLineBotController {
         log.info("Got text message from replyToken:{}: text:{} emojis:{}", replyToken, text, content.getEmojis());
         lineMessagingClient.getBotInfo();
 
-        // TODO Streamを使ったリファクタリング検討
+        // TODO Streamを使ったリファクタリング検討(if分岐が多すぎる...)
         if(isVictoryRoyalAsked(text)){
             String accountName = getAccountName(text);
             FortnitePlayerStats fortnitePlayerStats = executeFortnitetrackerApi(accountName);
@@ -73,19 +69,19 @@ public class FortnitePlayerStatsLineBotController {
 
             if (isSoloStatsAsked(text)){
                 String totalSoloVicroyNumber =  fortnitePlayerStats.stats.p2.top1.value;
-                this.replyText(replyToken, accountName + "さんの通算ソロビクロイ数は\n" + totalSoloVicroyNumber + "回です。");
+                this.replyText(replyToken, accountName + "さんのソロビクロイ数は\n" + totalSoloVicroyNumber + "回です。");
             } else if (isDuoStatsAsked(text)){
                 String totalDuoVicroyNumber =  fortnitePlayerStats.stats.p10.top1.value;
-                this.replyText(replyToken, accountName + "さんの通算デュオビクロイ数は\n" + totalDuoVicroyNumber + "回です。");
+                this.replyText(replyToken, accountName + "さんのデュオビクロイ数は\n" + totalDuoVicroyNumber + "回です。");
             } else if (isTrioStatsAsked(text)){
-                String totalTrioVicroyNumber =  fortnitePlayerStats.stats.p2.top1.value;
-                this.replyText(replyToken, accountName + "さんの通算トリオビクロイ数は\n" + totalTrioVicroyNumber + "回です。");
+                String totalTrioVicroyNumber =  fortnitePlayerStats.stats.trios.top1.value;
+                this.replyText(replyToken, accountName + "さんのトリオビクロイ数は\n" + totalTrioVicroyNumber + "回です。");
             } else if (isSquadStatsAsked(text)){
                 String totalSquadVicroyNumber =  fortnitePlayerStats.stats.p9.top1.value;
-                this.replyText(replyToken, accountName + "さんの通算スクワッドビクロイ数は\n" + totalSquadVicroyNumber + "回です。");
+                this.replyText(replyToken, accountName + "さんのスクワッドビクロイ数は\n" + totalSquadVicroyNumber + "回です。");
             } else {
-                totalVicroyNumber =  Integer.parseInt(fortnitePlayerStats.lifeTimeStats.get(8).get("value"));
-                this.replyText(replyToken, accountName + "さんの通算合計ビクロイ数は\n" + totalVicroyNumber + "回です。");
+                String totalVicroyNumber = fortnitePlayerStats.lifeTimeStats.get(8).get("value");
+                this.replyText(replyToken, accountName + "さんのビクロイ数は\n" + totalVicroyNumber + "回です。");
             }
         }
         if(isKillRateAsked(text)){
@@ -93,20 +89,23 @@ public class FortnitePlayerStatsLineBotController {
             FortnitePlayerStats fortnitePlayerStats = executeFortnitetrackerApi(accountName);
             if (Objects.isNull(fortnitePlayerStats.lifeTimeStats)){
                 this.replyText(replyToken, "指定のアカウントが見つかりませんでした。例を参考にもう一度入力をお願いします。\n\n例: (account名)のキルレートを教えて");
-            } else {
-                totalKillRate = Double.parseDouble(fortnitePlayerStats.lifeTimeStats.get(11).get("value"));
             }
             if (isSoloStatsAsked(text)){
-
-                this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+                String totalSoloKillRate =  fortnitePlayerStats.stats.p2.kd.value;
+                this.replyText(replyToken, accountName + "さんのソロキルレートは\n" + totalSoloKillRate + "回です。");
             } else if (isDuoStatsAsked(text)){
-                this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+                String totalDuoKillRate =  fortnitePlayerStats.stats.p10.kd.value;
+                this.replyText(replyToken, accountName + "さんのデュオキルレートは\n" + totalDuoKillRate + "回です。");
             } else if (isTrioStatsAsked(text)){
-                this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+                String totalTrioKillRate =  fortnitePlayerStats.stats.trios.kd.value;
+                this.replyText(replyToken, accountName + "さんのトリオキルレートは\n" + totalTrioKillRate + "回です。");
             } else if (isSquadStatsAsked(text)){
-                this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
+                String totalDuoKillRate =  fortnitePlayerStats.stats.p10.kd.value;
+                this.replyText(replyToken, accountName + "さんのデュオキルレートは\n" + totalDuoKillRate + "回です。");
+
             } else {
-                this.replyText(replyToken, accountName + "さんの通算キルレートは\n" + totalKillRate + "です。");
+                String totalKillRate = fortnitePlayerStats.lifeTimeStats.get(11).get("value");
+                this.replyText(replyToken, accountName + "さんのキルレートは\n" + totalKillRate + "です。");
             }
         }
     }
@@ -158,31 +157,13 @@ public class FortnitePlayerStatsLineBotController {
         return text.contains("スクワッド") || text.contains("すくわっど") || text.contains("squad");
     }
 
-
     private void replyText(@NonNull String replyToken, @NonNull String message) {
         if (replyToken.isEmpty()) {
             throw new IllegalArgumentException("replyToken must not be empty");
         }
-        if (message.length() > 1000) {
-            message = message.substring(0, 1000 - 2) + "……";
-        }
-        this.reply(replyToken, new TextMessage(message));
-    }
-
-    private void reply(@NonNull String replyToken, @NonNull Message message) {
-        reply(replyToken, singletonList(message));
-    }
-
-    private void reply(@NonNull String replyToken, @NonNull List<Message> messages) {
-        reply(replyToken, messages, false);
-    }
-
-    private void reply(@NonNull String replyToken,
-                       @NonNull List<Message> messages,
-                       boolean notificationDisabled) {
         try {
             BotApiResponse apiResponse = lineMessagingClient
-                    .replyMessage(new ReplyMessage(replyToken, messages, notificationDisabled))
+                    .replyMessage(new ReplyMessage(replyToken, new TextMessage(message), false))
                     .get();
             log.info("Sent messages: {}", apiResponse);
         } catch (InterruptedException | ExecutionException e) {
