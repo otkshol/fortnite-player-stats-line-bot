@@ -69,19 +69,23 @@ public class FortnitePlayerStatsLineBotController {
             FortnitePlayerStats fortnitePlayerStats = executeFortnitetrackerApi(accountName);
             if (Objects.isNull(fortnitePlayerStats.lifeTimeStats)){
                 this.replyText(replyToken, "指定のアカウントが見つかりませんでした。例を参考にもう一度入力をお願いします。\n\n例: (account名)のビクロイ数を教えて");
+            }
+
+            if (isSoloStatsAsked(text)){
+                String totalSoloVicroyNumber =  fortnitePlayerStats.stats.p2.top1.value;
+                this.replyText(replyToken, accountName + "さんの通算ソロビクロイ数は\n" + totalSoloVicroyNumber + "回です。");
+            } else if (isDuoStatsAsked(text)){
+                String totalDuoVicroyNumber =  fortnitePlayerStats.stats.p10.top1.value;
+                this.replyText(replyToken, accountName + "さんの通算デュオビクロイ数は\n" + totalDuoVicroyNumber + "回です。");
+            } else if (isTrioStatsAsked(text)){
+                String totalTrioVicroyNumber =  fortnitePlayerStats.stats.p2.top1.value;
+                this.replyText(replyToken, accountName + "さんの通算トリオビクロイ数は\n" + totalTrioVicroyNumber + "回です。");
+            } else if (isSquadStatsAsked(text)){
+                String totalSquadVicroyNumber =  fortnitePlayerStats.stats.p9.top1.value;
+                this.replyText(replyToken, accountName + "さんの通算スクワッドビクロイ数は\n" + totalSquadVicroyNumber + "回です。");
             } else {
                 totalVicroyNumber =  Integer.parseInt(fortnitePlayerStats.lifeTimeStats.get(8).get("value"));
-            }
-            if (isSoloStatsAsked(text)){
-                this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてソロの合計値を結果取得する予定です");
-            } else if (isDuoStatsAsked(text)){
-                this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてデュオの合計値を結果取得する予定です");
-            } else if (isTrioStatsAsked(text)){
-                this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてトリオの合計値を結果取得する予定です");
-            } else if (isSquadStatsAsked(text)){
-                this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてスクあっどの合計値を結果取得する予定です");
-            } else {
-                this.replyText(replyToken, accountName + "さんの通算ビクロイ数は\n" + totalVicroyNumber + "回です。");
+                this.replyText(replyToken, accountName + "さんの通算合計ビクロイ数は\n" + totalVicroyNumber + "回です。");
             }
         }
         if(isKillRateAsked(text)){
@@ -93,6 +97,7 @@ public class FortnitePlayerStatsLineBotController {
                 totalKillRate = Double.parseDouble(fortnitePlayerStats.lifeTimeStats.get(11).get("value"));
             }
             if (isSoloStatsAsked(text)){
+
                 this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
             } else if (isDuoStatsAsked(text)){
                 this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
@@ -150,7 +155,7 @@ public class FortnitePlayerStatsLineBotController {
     }
 
     private boolean isSquadStatsAsked(String text) {
-        return text.contains("スクアッド") || text.contains("すくあっど") || text.contains("squad");
+        return text.contains("スクワッド") || text.contains("すくわっど") || text.contains("squad");
     }
 
 
