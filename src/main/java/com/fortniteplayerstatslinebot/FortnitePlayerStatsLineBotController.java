@@ -23,12 +23,8 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
-import java.io.DataInput;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
-
-import static java.util.Collections.singletonList;
 
 @Slf4j
 @LineMessageHandler

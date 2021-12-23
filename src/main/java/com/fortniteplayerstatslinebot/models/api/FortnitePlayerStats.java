@@ -9,9 +9,6 @@ import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FortnitePlayerStats {
-    public String accountId;
-    public String epicUserHandle;
     public Stats stats;
     public List<Map<String,String>> lifeTimeStats;
 }
-
