@@ -16,6 +16,7 @@ import com.linecorp.bot.spring.boot.annotation.LineMessageHandler;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -38,6 +39,9 @@ public class FortnitePlayerStatsLineBotController {
 
     @Autowired
     RestTemplate restTemplate;
+
+    @Value("${trn-api-key}")
+    private String TRN_API_KEY;
 
     int totalVicroyNumber;
 
@@ -77,7 +81,7 @@ public class FortnitePlayerStatsLineBotController {
             } else if (isSquadStatsAsked(text)){
                 this.replyText(replyToken, "ビクロイ数を聞いてくれましたね。APIをたたいてスクあっどの合計値を結果取得する予定です");
             } else {
-                this.replyText(replyToken, accountName + "さんのビクロイ数は\n" + totalVicroyNumber + "回です。");
+                this.replyText(replyToken, accountName + "さんの通算ビクロイ数は\n" + totalVicroyNumber + "回です。");
             }
         }
         if(isKillRateAsked(text)){
@@ -97,14 +101,14 @@ public class FortnitePlayerStatsLineBotController {
             } else if (isSquadStatsAsked(text)){
                 this.replyText(replyToken, "キルレートを聞いてくれましたね。APIをたたいて結果取得する予定です");
             } else {
-                this.replyText(replyToken, accountName + "さんのキルレートは\n" + totalKillRate + "です。");
+                this.replyText(replyToken, accountName + "さんの通算キルレートは\n" + totalKillRate + "です。");
             }
         }
     }
 
     private FortnitePlayerStats executeFortnitetrackerApi(String accountName) throws JsonProcessingException {
         HttpHeaders headers = new HttpHeaders();
-        headers.add("TRN-Api-Key","");
+        headers.add("TRN-Api-Key",TRN_API_KEY);
         HttpEntity<FortnitePlayerStats> entity = new HttpEntity<>(headers);
         ResponseEntity<String> responseJson = restTemplate.exchange("https://api.fortnitetracker.com/v1/profile/all/" + accountName, HttpMethod.GET, entity, String.class);
         ObjectMapper mapper = new ObjectMapper();
