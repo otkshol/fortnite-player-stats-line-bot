@@ -41,9 +41,6 @@ public class FortnitePlayerStatsLineBotController {
 
     @EventMapping
     public void handleTextMessageEvent(MessageEvent<TextMessageContent> event) throws Exception {
-
-        // TODO LINEのユーザーIDを取得して一般用とプライベート用の振る舞いを分岐させる（外に対象ID一覧を置いておいて、Streamを使用して絞り込む。）
-        // 一般用から着手
         TextMessageContent message = event.getMessage();
         handleTextContent(event.getReplyToken(), event, message);
     }
@@ -51,15 +48,16 @@ public class FortnitePlayerStatsLineBotController {
     private void handleTextContent(String replyToken, Event event, TextMessageContent content)
             throws Exception {
         final String text = content.getText();
+        log.info("Got text message from userId:{}  replyToken:{}: text:{} emojis:{}", event.getSource().getUserId(), replyToken, text, content.getEmojis());
+        confirmVictoryRoyalNumber(replyToken, text);
+        confirmKillRate(replyToken, text);
+    }
 
-        log.info("Got text message from replyToken:{}: text:{} emojis:{}", replyToken, text, content.getEmojis());
-        lineMessagingClient.getBotInfo();
-
-        // TODO Streamを使ったリファクタリング検討(if分岐が多すぎる...)
-        if(isVictoryRoyalAsked(text)){
+    private void confirmVictoryRoyalNumber(String replyToken, String text) throws JsonProcessingException {
+        if(text.contains("ビクロイ数")){
             String accountName = getAccountName(text);
             FortnitePlayerStats fortnitePlayerStats = executeFortnitetrackerApi(accountName);
-            if (Objects.isNull(fortnitePlayerStats.lifeTimeStats)){
+            if (Objects.isNull(fortnitePlayerStats.stats)){
                 this.replyText(replyToken, "指定のアカウントが見つかりませんでした。例を参考にもう一度入力をお願いします。\n\n例: (account名)のビクロイ数を教えて");
             }
 
@@ -80,7 +78,10 @@ public class FortnitePlayerStatsLineBotController {
                 this.replyText(replyToken, accountName + "さんのビクロイ数は\n" + totalVicroyNumber + "回です。");
             }
         }
-        if(isKillRateAsked(text)){
+    }
+
+    private void confirmKillRate(String replyToken, String text) throws JsonProcessingException {
+        if(text.contains("キルレ")){
             String accountName = getAccountName(text);
             FortnitePlayerStats fortnitePlayerStats = executeFortnitetrackerApi(accountName);
             if (Objects.isNull(fortnitePlayerStats.lifeTimeStats)){
@@ -118,23 +119,15 @@ public class FortnitePlayerStatsLineBotController {
     private String getAccountName(String text) {
         if (text.contains("の")){
             return text.split("の")[0];
+        } else if (text.contains("ビクロイ数")) {
+            return text.split("ビクロイ数")[0];
+        } else if (text.contains("キルレ")) {
+            return text.split("キルレ")[0];
         } else if(text.contains(" ")){
             return text.split(" ")[0];
         } else if (text.contains("　")){
             return text.split("　")[0];
-        } else if (text.contains("ビクロイ数")) {
-         return text.split("ビクロイ数")[0];
-        } else if (text.contains("キルレ")) {
-            return text.split("キルレ")[0];
         } else throw new RuntimeException();
-    }
-
-    private boolean isVictoryRoyalAsked(String text) {
-        return text.contains("ビクロイ数");
-    }
-
-    private boolean isKillRateAsked(String text) {
-        return text.contains("キルレ");
     }
 
     private boolean isSoloStatsAsked(String text) {
