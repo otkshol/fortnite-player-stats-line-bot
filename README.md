@@ -9,10 +9,12 @@
 ## 利用方法
 
 - 下記QRコードを読みこんで、友達登録してください。
-![img.png](img.png)
+
+![img/qr_code.png](img/qr_code.png)
 
 - 下記のBotが表示されるので友達登録をしてください。
-![img_1.png](img_1.png)
+
+![img/account_img.png](img/account_img.png)
 
 ---
 ## 機能
@@ -28,5 +30,6 @@
 ## 構成
 - https://github.com/line/line-bot-sdk-java をベースにLINE BOTを作成しています。
 - データは https://fortnitetracker.com/site-api を利用して取得しています。
-![img_2.png](img_2.png)
+
+![img/diagram.png](img/diagram.png)
 
