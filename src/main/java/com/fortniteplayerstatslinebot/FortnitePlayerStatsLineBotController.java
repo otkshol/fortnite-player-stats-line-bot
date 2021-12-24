@@ -113,6 +113,7 @@ public class FortnitePlayerStatsLineBotController {
     }
 
     private String getAccountName(String text) {
+        // TODO アカウント名に日本語の「の」が含まれるパターンの考慮
         if (text.contains("の")){
             return text.split("の")[0];
         } else if (text.contains("ビクロイ数")) {
